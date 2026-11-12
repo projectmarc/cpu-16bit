@@ -1,5 +1,6 @@
-USO DEL COMPILADOR:
-1) Se debe introducir el código Ensamblador en la carpeta /programs con la extensión de archivo .tsm
-2) Ejecutar el programa compiler.py
-3) Pasar como input el nombre del archivo ensamblador sin su extensión
-4) Listo! Se creó un archivo con extensión .x en la carpeta /bin, ese es el código hexadecimal que recibe la memoria de instrucciones
+# Using the assembler
+
+1. Place the assembly source file in `/programs` with the `.tsm` extension.
+2. Run `compiler.py`.
+3. Enter the assembly filename without its extension when prompted.
+4. The assembler creates a file with the `.x` extension in `/bin`. This is the hexadecimal code used by instruction memory.

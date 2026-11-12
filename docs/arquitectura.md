@@ -1,111 +1,111 @@
-# Arquitectura e instrucciones
+# Architecture and instructions
 
-El procesador combina una ISA de 16 bits con un diseño monociclo organizado en subcircuitos. Esta guía recorre sus componentes y la codificación de los programas.
+The processor combines a 16-bit ISA with a single-cycle design organized into subcircuits. This guide covers its components and program encoding.
 
-## Componentes
+## Components
 
-| Componente | Función |
+| Component | Function |
 | --- | --- |
-| Contador de programa | Registro de 16 bits; avanza una instrucción o aplica un desplazamiento relativo. |
-| Memoria de instrucciones | Dos RAM de 8 bits en paralelo; entrega opcode y tres campos de operandos. |
-| Unidad de control | Decodifica el opcode y genera las señales de escritura, lectura, salto y operación de ALU. |
-| Banco de registros | 16 registros de 16 bits; `r0` permanece en cero. |
-| ALU | Suma, resta, OR, AND, comparaciones y negación de salida. |
-| Memoria de datos | Dos RAM en paralelo con señales de lectura y escritura. |
+| Program counter | 16-bit register; advances by one instruction or applies a relative offset. |
+| Instruction memory | Two 8-bit RAM modules in parallel; provides the opcode and three operand fields. |
+| Control unit | Decodes the opcode and generates write, read, branch, and ALU operation signals. |
+| Register file | 16 registers of 16 bits each; `r0` remains zero. |
+| ALU | Addition, subtraction, OR, AND, comparisons, and output inversion. |
+| Data memory | Two RAM modules in parallel with read and write signals. |
 
-El circuito principal `main` conecta los subcircuitos. Las señales de control se simplifican mediante mapas de Karnaugh.
+The main circuit, `main`, connects the subcircuits. Control signals are simplified using Karnaugh maps.
 
-## Codificación
+## Encoding
 
-Cada instrucción ocupa **16 bits**, representados por cuatro dígitos hexadecimales: un opcode de 4 bits y tres campos de 4 bits.
+Each instruction occupies **16 bits**, represented by four hexadecimal digits: a 4-bit opcode and three 4-bit fields.
 
-| Formato | Campos, de izquierda a derecha |
+| Format | Fields, from left to right |
 | --- | --- |
 | R | `opcode`, `rd`, `rf1`, `rf2` |
 | I | `opcode`, `rd`, `rf1`, `inmediato` |
 | J | `opcode`, `desplazamiento`, `rf1`, `rf2` |
 
-Los inmediatos se escriben en decimal en el código fuente. Para codificar valores negativos en cuatro bits, el ensamblador suma 16 antes de convertirlos a hexadecimal: por ejemplo, `-2` se representa como `e`.
+Immediate values are written in decimal in the source code. To encode negative values in four bits, the assembler adds 16 before converting them to hexadecimal: for example, `-2` is represented as `e`.
 
 ## ISA
 
-El conjunto de instrucciones reúne operaciones aritméticas, lógicas, de memoria y de control de flujo.
+The instruction set includes arithmetic, logic, memory, and control-flow operations.
 
-| Opcode | Instrucción | Operación |
+| Opcode | Instruction | Operation |
 | --- | --- | --- |
-| `0` | `not rd, rf1, r0` | NOT bit a bit de `rf1` hacia `rd`. |
-| `1` | `suma rd, rf1, rf2` | Suma de registros. |
-| `2` | `resta rd, rf1, rf2` | Resta de registros. |
-| `3` | `o rd, rf1, rf2` | OR bit a bit. |
-| `4` | `y rd, rf1, rf2` | AND bit a bit. |
-| `5` | `carga rd, rf1, rf2` | Lee la memoria en la dirección `rf1 + rf2`. |
-| `6` | `almacena rd, rf1, rf2` | Escribe el contenido de `rd` en la dirección `rf1 + rf2`. |
-| `7` | `sumai rd, rf1, inm` | Suma un inmediato a `rf1`. |
-| `8` | `igual inm, rf1, rf2` | Salta a `PC + inm` si los registros son iguales. |
-| `9` | `mayor inm, rf1, rf2` | Salta si `rf1 > rf2`. |
-| `a` | `mayorig inm, rf1, rf2` | Salta si `rf1 >= rf2`. |
+| `0` | `not rd, rf1, r0` | Bitwise NOT of `rf1`, stored in `rd`. |
+| `1` | `suma rd, rf1, rf2` | Register addition. |
+| `2` | `resta rd, rf1, rf2` | Register subtraction. |
+| `3` | `o rd, rf1, rf2` | Bitwise OR. |
+| `4` | `y rd, rf1, rf2` | Bitwise AND. |
+| `5` | `carga rd, rf1, rf2` | Reads memory at address `rf1 + rf2`. |
+| `6` | `almacena rd, rf1, rf2` | Writes the contents of `rd` to address `rf1 + rf2`. |
+| `7` | `sumai rd, rf1, inm` | Adds an immediate value to `rf1`. |
+| `8` | `igual inm, rf1, rf2` | Branches to `PC + inm` if the registers are equal. |
+| `9` | `mayor inm, rf1, rf2` | Branches if `rf1 > rf2`. |
+| `a` | `mayorig inm, rf1, rf2` | Branches if `rf1 >= rf2`. |
 
-## Pseudoinstrucciones
+## Pseudoinstructions
 
-Las pseudoinstrucciones permiten expresar operaciones habituales de forma abreviada. Para escribir los programas `.tsm`, usá las siguientes instrucciones equivalentes:
+Pseudoinstructions provide shorthand for common operations. When writing `.tsm` programs, use the following equivalent instructions:
 
-| Pseudoinstrucción | Expansión para el ensamblador |
+| Pseudoinstruction | Assembler expansion |
 | --- | --- |
 | `nop` | `suma r0, r0, r0` |
 | `negar r1` | `not r1, r1, r0` |
 | `inc r1` | `sumai r1, r1, 1` |
 | `dec r1` | `sumai r1, r1, -1` |
 
-Por ejemplo, `inc r1` se expresa como `sumai r1, r1, 1`, tal como se utiliza en el programa de sumatoria.
+For example, `inc r1` is written as `sumai r1, r1, 1`, as used in the summation program.
 
-## Memorias y archivos de carga
+## Memories and load files
 
-`hardware/instrucciones_memoria/` conserva dos imágenes originales con cabecera `v3.0 hex words addressed`.
+`hardware/instrucciones_memoria/` contains two original memory images with the header `v3.0 hex words addressed`.
 
-Las primeras 12 posiciones de `instrucciones_memoria1` y `instrucciones_memoria2` corresponden, respectivamente, a los bytes izquierdo y derecho de las instrucciones de `compiler/bin/final.x`.
+The first 12 locations in `instrucciones_memoria1` and `instrucciones_memoria2` correspond to the left and right bytes, respectively, of the instructions in `compiler/bin/final.x`.
 
-Cada archivo `.x` presenta las instrucciones como cuatro dígitos hexadecimales separados por espacios; las imágenes RAM utilizan un formato con cabecera y direcciones.
+Each `.x` file represents instructions as four hexadecimal digits separated by spaces; the RAM images use a format with a header and addresses.
 
-## Diagramas del procesador
+## Processor diagrams
 
-### Memoria de instrucciones
+### Instruction memory
 
-Dos módulos RAM de 8 bits entregan la instrucción de 16 bits. Un separador distribuye el opcode y los campos de operandos.
+Two 8-bit RAM modules provide the 16-bit instruction. A splitter distributes the opcode and operand fields.
 
-![Memoria de instrucciones](images/instruction-memory.png)
+![Instruction memory](images/instruction-memory.png)
 
-### Contador de programa
+### Program counter
 
-El registro del PC se actualiza con el avance secuencial o el desplazamiento correspondiente a un salto.
+The PC register is updated either sequentially or with the offset for a branch.
 
-![Contador de programa](images/program-counter.png)
+![Program counter](images/program-counter.png)
 
-### Unidad de control
+### Control unit
 
-La decodificación del opcode produce las señales que coordinan las operaciones del procesador.
+Opcode decoding produces the signals that coordinate processor operations.
 
-![Unidad de control](images/control-unit.png)
+![Control unit](images/control-unit.png)
 
-### Banco de registros
+### Register file
 
-Un decodificador selecciona el registro de escritura y los multiplexores seleccionan las salidas de lectura.
+A decoder selects the write register, and multiplexers select the read outputs.
 
-![Banco de registros](images/register-file.png)
+![Register file](images/register-file.png)
 
-### Unidad aritmética lógica
+### Arithmetic logic unit
 
-La ALU reúne las operaciones aritméticas, lógicas y de comparación; las señales de control seleccionan su salida.
+The ALU combines arithmetic, logic, and comparison operations; control signals select its output.
 
-![Unidad aritmética lógica](images/alu.png)
+![Arithmetic logic unit](images/alu.png)
 
-### Memoria de datos
+### Data memory
 
-Los módulos RAM trabajan en paralelo con señales de habilitación de lectura y escritura.
+The RAM modules operate in parallel with read and write enable signals.
 
-![Memoria de datos](images/data-memory.png)
+![Data memory](images/data-memory.png)
 
-### Procesador completo
+### Complete processor
 
-Los componentes se interconectan en el circuito principal mediante buses y túneles de Logisim-evolution.
+The components are interconnected in the main circuit using Logisim-evolution buses and tunnels.
 
-![Procesador monociclo completo](images/processor.png)
+![Complete single-cycle processor](images/processor.png)
